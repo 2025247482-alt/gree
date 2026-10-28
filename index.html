@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>3D Tree AR</title>
+
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.7/aframe/build/aframe-ar.js"></script>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+
+    #status {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      z-index: 10;
+      padding: 12px;
+      color: white;
+      background: rgba(0, 0, 0, 0.75);
+      border-radius: 8px;
+      text-align: center;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="status">
+    Loading 3D tree...
+  </div>
+
+  <a-scene
+    embedded
+    vr-mode-ui="enabled: false"
+    renderer="colorManagement: true; antialias: true"
+    arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;">
+
+    <a-assets timeout="15000">
+      <a-asset-item
+        id="treeModel"
+        src="./tree.glb">
+      </a-asset-item>
+    </a-assets>
+
+    <a-marker
+      id="hiroMarker"
+      preset="hiro"
+      emitevents="true">
+
+      <a-entity
+        id="tree"
+        gltf-model="#treeModel"
+        position="0 0.02 0"
+        rotation="0 0 0"
+        scale="0.18 0.18 0.18"
+        visible="false">
+      </a-entity>
+
+    </a-marker>
+
+    <a-entity camera></a-entity>
+
+  </a-scene>
+
+  <script>
+    const status = document.getElementById("status");
+    const tree = document.getElementById("tree");
+    const marker = document.getElementById("hiroMarker");
+
+    let modelLoaded = false;
+    let markerVisible = false;
+
+    tree.addEventListener("model-loaded", function () {
+      modelLoaded = true;
+      tree.setAttribute("visible", markerVisible);
+
+      status.textContent = markerVisible
+        ? "Tree detected! Keep the Hiro marker in view."
+        : "Tree ready. Point your camera at the Hiro marker.";
+    });
+
+    tree.addEventListener("model-error", function () {
+      status.textContent =
+        "Could not load tree.glb. Check the GitHub file path.";
+    });
+
+    marker.addEventListener("markerFound", function () {
+      markerVisible = true;
+      tree.setAttribute("visible", modelLoaded);
+
+      status.textContent = modelLoaded
+        ? "Tree detected! Keep the marker in view."
+        : "Marker detected. Loading tree...";
+    });
+
+    marker.addEventListener("markerLost", function () {
+      markerVisible = false;
+      tree.setAttribute("visible", false);
+      status.textContent =
+        "Point your camera at the Hiro marker.";
+    });
+  </script>
+
+</body>
+</html>
